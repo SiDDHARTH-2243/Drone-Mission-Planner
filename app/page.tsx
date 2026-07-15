@@ -176,13 +176,6 @@ export default function Home() {
               onAddWaypoint={handleMapClick}
               onMoveWaypoint={moveWaypoint}
             />
-            {/* Crosshair overlay */}
-            <div className="pointer-events-none absolute inset-0 z-[500] flex items-center justify-center opacity-30">
-              <div className="h-full w-px bg-cyan-neon" />
-              <div className="absolute h-px w-full bg-cyan-neon" />
-              <div className="absolute h-8 w-8 rounded-none border border-cyan-neon" />
-              <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-none border border-cyan-neon bg-black/50" />
-            </div>
           </div>
 
           {/* Right Control Panel */}

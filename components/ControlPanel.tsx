@@ -138,8 +138,8 @@ export default function ControlPanel({
       <div className="hide-scrollbar flex flex-1 flex-col overflow-y-auto scroll-smooth">
         {/* 1. Telemetry Header */}
         <section className="border-b border-zinc-800 bg-zinc-950 p-4">
-          <div className="mb-4 flex items-start justify-between">
-            <div>
+          <div className="mb-4 flex items-center justify-center">
+            <div className="px-6">
               <h3 className="mb-1 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
                 Total Dist
               </h3>
@@ -154,11 +154,11 @@ export default function ControlPanel({
                 <span className="text-[10px] font-mono text-zinc-500">km</span>
               </div>
             </div>
-            <div className="text-right">
+            <div className="border-l border-zinc-700 px-6">
               <h3 className="mb-1 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
                 Ext Time
               </h3>
-              <div className="flex items-baseline justify-end gap-1">
+              <div className="flex items-baseline gap-1">
                 <span
                   className={`text-2xl font-mono tabular-nums ${
                     insufficientRange ? "text-red-500" : "text-zinc-100"

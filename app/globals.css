@@ -71,10 +71,6 @@ body {
   display: none;
 }
 
-/* Darken the OSM raster tiles to fit the GCS dark aesthetic. */
-.leaflet-tile-pane {
-  filter: grayscale(0.7) brightness(0.55) contrast(1.1);
-}
 
 /* Leaflet's default divIcon wrapper is opaque; the inner pin div carries the
    Tailwind styling (rounded-full, bg-blue-500, dynamic size). */
@@ -118,4 +114,5 @@ body {
   scrollbar-width: thin;
   scrollbar-color: #3f3f46 transparent;
 }
+
 
