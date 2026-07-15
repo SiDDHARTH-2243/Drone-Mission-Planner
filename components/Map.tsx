@@ -2,13 +2,14 @@
 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   MapContainer,
   TileLayer,
   Marker,
   Polyline,
   Polygon,
+  useMap,
   useMapEvents,
 } from "react-leaflet";
 import type { Waypoint } from "@/types/mission";
@@ -24,9 +25,75 @@ const ZOOM_MAX = 18;
 type MapProps = {
   waypoints: Waypoint[];
   isClosedLoop: boolean;
+  satellite: boolean;
+  // Incrementing counters trigger the matching map action from the toolbar.
+  focusNonce: number;
+  fitNonce: number;
   onAddWaypoint: (lat: number, lng: number) => void;
   onMoveWaypoint: (id: string, lat: number, lng: number) => void;
 };
+
+const TILE_LAYERS = {
+  vector: {
+    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  },
+  satellite: {
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    attribution:
+      'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
+  },
+} as const;
+
+// Runs toolbar map actions from inside the MapContainer, where useMap() always
+// resolves to the live map (avoids StrictMode's detached-instance pitfalls).
+function MapCommands({
+  waypoints,
+  focusNonce,
+  fitNonce,
+}: {
+  waypoints: Waypoint[];
+  focusNonce: number;
+  fitNonce: number;
+}) {
+  const map = useMap();
+  const wpRef = useRef(waypoints);
+  wpRef.current = waypoints;
+
+  // Center on Waypoint 1.
+  useEffect(() => {
+    if (focusNonce === 0) return;
+    const wps = wpRef.current;
+    if (wps.length === 0) return;
+    map.setView([wps[0].lat, wps[0].lng], map.getZoom(), { animate: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusNonce]);
+
+  // Fit the view to the whole flight path.
+  useEffect(() => {
+    if (fitNonce === 0) return;
+    const wps = wpRef.current;
+    if (wps.length === 0) return;
+    if (wps.length === 1) {
+      map.setView([wps[0].lat, wps[0].lng], map.getZoom());
+      return;
+    }
+    const lats = wps.map((w) => w.lat);
+    const lngs = wps.map((w) => w.lng);
+    // Zoom animation is unreliable here, so fit without animating.
+    map.fitBounds(
+      [
+        [Math.min(...lats), Math.min(...lngs)],
+        [Math.max(...lats), Math.max(...lngs)],
+      ],
+      { padding: [48, 48], animate: false },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fitNonce]);
+
+  return null;
+}
 
 function MapEvents({
   onAddWaypoint,
@@ -64,11 +131,15 @@ function numberedIcon(index: number, size: number) {
 export default function Map({
   waypoints,
   isClosedLoop,
+  satellite,
+  focusNonce,
+  fitNonce,
   onAddWaypoint,
   onMoveWaypoint,
 }: MapProps) {
   const [currentZoom, setCurrentZoom] = useState(INITIAL_ZOOM);
   const markerSize = markerSizeForZoom(currentZoom);
+  const tiles = satellite ? TILE_LAYERS.satellite : TILE_LAYERS.vector;
 
   const path: [number, number][] = waypoints.map((w) => [w.lat, w.lng]);
   if (isClosedLoop && waypoints.length > 0) {
@@ -104,8 +175,14 @@ export default function Map({
         style={{ width: "100%", height: "100%" }}
       >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        key={satellite ? "satellite" : "vector"}
+        attribution={tiles.attribution}
+        url={tiles.url}
+      />
+      <MapCommands
+        waypoints={waypoints}
+        focusNonce={focusNonce}
+        fitNonce={fitNonce}
       />
       <MapEvents onAddWaypoint={onAddWaypoint} onZoomChange={setCurrentZoom} />
       {waypoints.map((wp, i) => (
