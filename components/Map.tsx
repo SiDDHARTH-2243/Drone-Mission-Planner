@@ -1,19 +1,63 @@
 "use client";
 
 import "leaflet/dist/leaflet.css";
-import { MapContainer, TileLayer } from "react-leaflet";
+import L from "leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Polyline,
+  useMapEvents,
+} from "react-leaflet";
+import type { Waypoint } from "@/types/mission";
 
-export default function Map() {
+type MapProps = {
+  waypoints: Waypoint[];
+  onAddWaypoint: (lat: number, lng: number) => void;
+};
+
+function ClickHandler({
+  onAddWaypoint,
+}: {
+  onAddWaypoint: (lat: number, lng: number) => void;
+}) {
+  useMapEvents({
+    click(e) {
+      onAddWaypoint(e.latlng.lat, e.latlng.lng);
+    },
+  });
+  return null;
+}
+
+function numberedIcon(index: number) {
+  return L.divIcon({
+    className: "waypoint-marker",
+    html: `<div class="wp-pin"><span>WP ${index + 1}</span></div>`,
+    iconSize: [44, 44],
+    iconAnchor: [22, 22],
+  });
+}
+
+export default function Map({ waypoints, onAddWaypoint }: MapProps) {
+  const path: [number, number][] = waypoints.map((w) => [w.lat, w.lng]);
+
   return (
     <MapContainer
       center={[17.6805, 74.0183]}
       zoom={13}
-      style={{ width: "100vw", height: "100vh" }}
+      style={{ width: "100%", height: "100%" }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      <ClickHandler onAddWaypoint={onAddWaypoint} />
+      {waypoints.map((wp, i) => (
+        <Marker key={wp.id} position={[wp.lat, wp.lng]} icon={numberedIcon(i)} />
+      ))}
+      {path.length > 1 && (
+        <Polyline positions={path} pathOptions={{ color: "#38bdf8", weight: 3 }} />
+      )}
     </MapContainer>
   );
 }
