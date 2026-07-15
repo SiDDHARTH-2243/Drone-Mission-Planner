@@ -95,6 +95,7 @@ export default function ControlPanel({
   const [propDiameter, setPropDiameter] = useState(DEFAULT_PROP_DIAMETER_IN);
   const [propPitch, setPropPitch] = useState(DEFAULT_PROP_PITCH_IN);
   const [cruiseSpeed, setCruiseSpeed] = useState(DEFAULT_CRUISE_SPEED_MPS);
+  const [isEditingSpeed, setIsEditingSpeed] = useState(false);
 
   // Time to fly the plotted path at the configured ground speed.
   const pathSeconds = cruiseSpeed > 0 ? totalMeters / cruiseSpeed : 0;
@@ -153,11 +154,33 @@ export default function ControlPanel({
           </div>
         </div>
         <div className="col-span-2 text-[10px] text-zinc-600">
-          Cruise speed {cruiseSpeed} m/s · {waypoints.length} waypoints
+          Cruise speed {cruiseSpeed} m/s{" "}
+          <button
+            type="button"
+            onClick={() => setIsEditingSpeed((v) => !v)}
+            className="text-sky-400 underline underline-offset-2 hover:text-sky-300"
+          >
+            (change)
+          </button>{" "}
+          · {waypoints.length} waypoints
           {isClosedLoop && (
             <span className="ml-2 rounded bg-emerald-500/20 px-1.5 py-0.5 font-semibold uppercase text-emerald-400">
               Loop Closed
             </span>
+          )}
+          {isEditingSpeed && (
+            <div className="mt-1 flex items-center gap-1">
+              <input
+                type="number"
+                value={cruiseSpeed}
+                min={0}
+                step={0.5}
+                autoFocus
+                onChange={(e) => setCruiseSpeed(Number(e.target.value))}
+                className="w-20 rounded border border-zinc-700 bg-zinc-900 px-2 py-0.5 font-mono text-zinc-100 outline-none focus:border-sky-500"
+              />
+              <span className="text-zinc-500">m/s</span>
+            </div>
           )}
         </div>
         <div className="col-span-2 flex items-center justify-between text-[10px] text-zinc-600">
@@ -338,17 +361,6 @@ export default function ControlPanel({
               min={0}
               step={0.1}
               onChange={(e) => setPropPitch(Number(e.target.value))}
-              className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-zinc-100 outline-none focus:border-sky-500"
-            />
-          </label>
-          <label className="flex flex-col gap-1">
-            <span className="text-zinc-500">Cruise (m/s)</span>
-            <input
-              type="number"
-              value={cruiseSpeed}
-              min={0}
-              step={0.5}
-              onChange={(e) => setCruiseSpeed(Number(e.target.value))}
               className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-zinc-100 outline-none focus:border-sky-500"
             />
           </label>

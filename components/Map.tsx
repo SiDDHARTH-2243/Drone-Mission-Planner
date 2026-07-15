@@ -8,6 +8,7 @@ import {
   TileLayer,
   Marker,
   Polyline,
+  Polygon,
   useMapEvents,
 } from "react-leaflet";
 import type { Waypoint } from "@/types/mission";
@@ -52,10 +53,9 @@ function markerSizeForZoom(zoom: number) {
 
 function numberedIcon(index: number, size: number) {
   const fontSize = Math.max(8, Math.round(size * 0.42));
-  const border = size < 22 ? 1 : 2;
   return L.divIcon({
     className: "waypoint-marker",
-    html: `<div style="width:${size}px;height:${size}px;font-size:${fontSize}px;border-width:${border}px;">${index + 1}</div>`,
+    html: `<div class="box-border rounded-full bg-blue-500 text-white border-2 border-white flex items-center justify-center font-bold shadow-md" style="width:${size}px;height:${size}px;font-size:${fontSize}px;">${index + 1}</div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
@@ -101,8 +101,23 @@ export default function Map({
           }}
         />
       ))}
-      {path.length > 1 && (
-        <Polyline positions={path} pathOptions={{ color: "#38bdf8", weight: 3 }} />
+      {isClosedLoop && waypoints.length >= 3 ? (
+        <Polygon
+          positions={waypoints.map((w) => [w.lat, w.lng])}
+          pathOptions={{
+            color: "#38bdf8",
+            weight: 3,
+            fillColor: "orange",
+            fillOpacity: 0.3,
+          }}
+        />
+      ) : (
+        path.length > 1 && (
+          <Polyline
+            positions={path}
+            pathOptions={{ color: "#38bdf8", weight: 3 }}
+          />
+        )
       )}
     </MapContainer>
   );
