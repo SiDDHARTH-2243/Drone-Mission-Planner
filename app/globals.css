@@ -17,18 +17,39 @@ body {
   border: none;
 }
 
-/* Slim dark-theme scrollbars for the waypoints list and MAVLink preview. */
-::-webkit-scrollbar {
+/* Slim dark-theme scrollbars, forced onto every scrollable element. */
+*::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
-::-webkit-scrollbar-track {
+*::-webkit-scrollbar-track {
   background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
+*::-webkit-scrollbar-thumb {
   background: #3f3f46;
   border-radius: 10px;
+}
+
+/* Explicit fallback class for the sidebar's nested overflow containers. */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 10px;
+}
+
+/* Firefox equivalent (no ::-webkit pseudo-elements there). */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #3f3f46 transparent;
 }
 

@@ -241,7 +241,7 @@ export default function ControlPanel({
               No waypoints yet.
             </div>
           ) : (
-            <div className="max-h-[300px] overflow-y-auto rounded border border-zinc-800/60">
+            <div className="custom-scrollbar max-h-[300px] overflow-y-auto rounded border border-zinc-800/60">
             <table className="w-full text-xs">
               <thead>
                 <tr className="text-left text-[10px] uppercase tracking-wide text-zinc-500">
@@ -385,7 +385,7 @@ export default function ControlPanel({
         <div className="border-b border-zinc-800 px-4 py-2 text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
           MAVLink Preview
         </div>
-        <pre className="flex-1 overflow-auto bg-black px-4 py-2 text-[11px] leading-snug text-emerald-300">
+        <pre className="custom-scrollbar flex-1 overflow-auto bg-black px-4 py-2 text-[11px] leading-snug text-emerald-300">
           {JSON.stringify(mavlink, null, 2)}
         </pre>
       </section>
