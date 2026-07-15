@@ -140,13 +140,13 @@ export default function ControlPanel({
         <section className="border-b border-zinc-800 bg-zinc-950 p-4">
           <div className="mb-4 flex items-center justify-center">
             <div className="px-6">
-              <h3 className="mb-1 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
+              <h3 className="mb-1 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-300">
                 Total Dist
               </h3>
               <div className="flex items-baseline gap-1">
                 <span
-                  className={`text-2xl font-mono tabular-nums ${
-                    insufficientRange ? "text-red-500" : "text-zinc-100"
+                  className={`text-2xl font-mono font-black tabular-nums ${
+                    insufficientRange ? "text-red-500" : "text-cyan-400"
                   }`}
                 >
                   {(totalMeters / 1000).toFixed(1)}
@@ -155,13 +155,13 @@ export default function ControlPanel({
               </div>
             </div>
             <div className="border-l border-zinc-700 px-6">
-              <h3 className="mb-1 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
+              <h3 className="mb-1 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-300">
                 Ext Time
               </h3>
               <div className="flex items-baseline gap-1">
                 <span
-                  className={`text-2xl font-mono tabular-nums ${
-                    insufficientRange ? "text-red-500" : "text-zinc-100"
+                  className={`text-2xl font-mono font-black tabular-nums ${
+                    insufficientRange ? "text-red-500" : "text-cyan-400"
                   }`}
                 >
                   {formatClock(pathSeconds)}
