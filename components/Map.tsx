@@ -15,6 +15,7 @@ type MapProps = {
   waypoints: Waypoint[];
   isClosedLoop: boolean;
   onAddWaypoint: (lat: number, lng: number) => void;
+  onMoveWaypoint: (id: string, lat: number, lng: number) => void;
 };
 
 function ClickHandler({
@@ -43,6 +44,7 @@ export default function Map({
   waypoints,
   isClosedLoop,
   onAddWaypoint,
+  onMoveWaypoint,
 }: MapProps) {
   const path: [number, number][] = waypoints.map((w) => [w.lat, w.lng]);
   if (isClosedLoop && waypoints.length > 0) {
@@ -61,7 +63,19 @@ export default function Map({
       />
       <ClickHandler onAddWaypoint={onAddWaypoint} />
       {waypoints.map((wp, i) => (
-        <Marker key={wp.id} position={[wp.lat, wp.lng]} icon={numberedIcon(i)} />
+        <Marker
+          key={wp.id}
+          position={[wp.lat, wp.lng]}
+          icon={numberedIcon(i)}
+          draggable={true}
+          eventHandlers={{
+            dragend: (e) => {
+              const marker = e.target as L.Marker;
+              const { lat, lng } = marker.getLatLng();
+              onMoveWaypoint(wp.id, lat, lng);
+            },
+          }}
+        />
       ))}
       {path.length > 1 && (
         <Polyline positions={path} pathOptions={{ color: "#38bdf8", weight: 3 }} />

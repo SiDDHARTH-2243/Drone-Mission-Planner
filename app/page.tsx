@@ -50,6 +50,23 @@ export default function Home() {
     );
   }, []);
 
+  const moveWaypoint = useCallback((id: string, lat: number, lng: number) => {
+    setWaypoints((prev) =>
+      prev.map((wp) => (wp.id === id ? { ...wp, lat, lng } : wp)),
+    );
+  }, []);
+
+  const deleteWaypoint = useCallback((id: string) => {
+    setWaypoints((prev) => {
+      const next = prev.filter((wp) => wp.id !== id);
+      // A closed loop requires at least 3 points.
+      if (next.length < 3) {
+        setIsClosedLoop(false);
+      }
+      return next;
+    });
+  }, []);
+
   const clearMission = useCallback(() => {
     setWaypoints([]);
     setIsClosedLoop(false);
@@ -62,12 +79,14 @@ export default function Home() {
           waypoints={waypoints}
           isClosedLoop={isClosedLoop}
           onAddWaypoint={handleMapClick}
+          onMoveWaypoint={moveWaypoint}
         />
       </div>
       <ControlPanel
         waypoints={waypoints}
         isClosedLoop={isClosedLoop}
         onAltitudeChange={updateAltitude}
+        onDeleteWaypoint={deleteWaypoint}
         onClear={clearMission}
       />
     </main>

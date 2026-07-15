@@ -1,7 +1,7 @@
 "use client";
 
 import * as turf from "@turf/turf";
-import { AlertTriangle, Trash2 } from "lucide-react";
+import { AlertTriangle, Trash2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
   AIR_DENSITY_KG_M3,
@@ -24,6 +24,7 @@ type Props = {
   waypoints: Waypoint[];
   isClosedLoop: boolean;
   onAltitudeChange: (id: string, altitude: number) => void;
+  onDeleteWaypoint: (id: string) => void;
   onClear: () => void;
 };
 
@@ -59,6 +60,7 @@ export default function ControlPanel({
   waypoints,
   isClosedLoop,
   onAltitudeChange,
+  onDeleteWaypoint,
   onClear,
 }: Props) {
   const totalMeters = useMemo(() => {
@@ -210,6 +212,7 @@ export default function ControlPanel({
                   <th className="py-1 pr-2">Lat</th>
                   <th className="py-1 pr-2">Lng</th>
                   <th className="py-1">Alt (m)</th>
+                  <th className="py-1" aria-label="Delete" />
                 </tr>
               </thead>
               <tbody className="font-mono">
@@ -233,6 +236,16 @@ export default function ControlPanel({
                         }
                         className="w-20 rounded border border-zinc-700 bg-zinc-900 px-2 py-0.5 text-right text-zinc-100 outline-none focus:border-sky-500"
                       />
+                    </td>
+                    <td className="py-1 pl-2 text-right">
+                      <button
+                        type="button"
+                        onClick={() => onDeleteWaypoint(wp.id)}
+                        aria-label={`Delete waypoint ${i + 1}`}
+                        className="rounded p-1 text-zinc-500 transition hover:bg-red-500/10 hover:text-red-400"
+                      >
+                        <X size={14} />
+                      </button>
                     </td>
                   </tr>
                 ))}
