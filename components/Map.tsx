@@ -13,6 +13,7 @@ import type { Waypoint } from "@/types/mission";
 
 type MapProps = {
   waypoints: Waypoint[];
+  isClosedLoop: boolean;
   onAddWaypoint: (lat: number, lng: number) => void;
 };
 
@@ -38,8 +39,15 @@ function numberedIcon(index: number) {
   });
 }
 
-export default function Map({ waypoints, onAddWaypoint }: MapProps) {
+export default function Map({
+  waypoints,
+  isClosedLoop,
+  onAddWaypoint,
+}: MapProps) {
   const path: [number, number][] = waypoints.map((w) => [w.lat, w.lng]);
+  if (isClosedLoop && waypoints.length > 0) {
+    path.push([waypoints[0].lat, waypoints[0].lng]);
+  }
 
   return (
     <MapContainer

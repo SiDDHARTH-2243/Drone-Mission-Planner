@@ -7,6 +7,7 @@ import { CRUISE_SPEED_MPS, type Waypoint } from "@/types/mission";
 
 type Props = {
   waypoints: Waypoint[];
+  isClosedLoop: boolean;
   onAltitudeChange: (id: string, altitude: number) => void;
   onClear: () => void;
 };
@@ -41,6 +42,7 @@ function toMavlink(waypoints: Waypoint[]) {
 
 export default function ControlPanel({
   waypoints,
+  isClosedLoop,
   onAltitudeChange,
   onClear,
 }: Props) {
@@ -51,8 +53,17 @@ export default function ControlPanel({
       const b = turf.point([waypoints[i].lng, waypoints[i].lat]);
       sum += turf.distance(a, b, { units: "meters" });
     }
+    if (isClosedLoop && waypoints.length > 1) {
+      const first = waypoints[0];
+      const last = waypoints[waypoints.length - 1];
+      sum += turf.distance(
+        turf.point([last.lng, last.lat]),
+        turf.point([first.lng, first.lat]),
+        { units: "meters" },
+      );
+    }
     return sum;
-  }, [waypoints]);
+  }, [waypoints, isClosedLoop]);
 
   const etaSeconds = totalMeters / CRUISE_SPEED_MPS;
   const mavlink = useMemo(() => toMavlink(waypoints), [waypoints]);
@@ -83,10 +94,15 @@ export default function ControlPanel({
         </div>
         <div className="col-span-2 text-[10px] text-zinc-600">
           Cruise speed {CRUISE_SPEED_MPS} m/s · {waypoints.length} waypoints
+          {isClosedLoop && (
+            <span className="ml-2 rounded bg-emerald-500/20 px-1.5 py-0.5 font-semibold uppercase text-emerald-400">
+              Loop Closed
+            </span>
+          )}
         </div>
       </section>
 
-      <section className="flex-1 overflow-y-auto border-b border-zinc-800">
+      <section className="flex flex-col border-b border-zinc-800">
         <div className="px-4 py-3">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
@@ -108,6 +124,7 @@ export default function ControlPanel({
               No waypoints yet.
             </div>
           ) : (
+            <div className="max-h-[300px] overflow-y-auto rounded border border-zinc-800/60">
             <table className="w-full text-xs">
               <thead>
                 <tr className="text-left text-[10px] uppercase tracking-wide text-zinc-500">
@@ -143,11 +160,12 @@ export default function ControlPanel({
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </section>
 
-      <section className="flex min-h-[220px] flex-col">
+      <section className="flex min-h-[220px] flex-1 flex-col overflow-hidden">
         <div className="border-b border-zinc-800 px-4 py-2 text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
           MAVLink Preview
         </div>
