@@ -1,9 +1,17 @@
 "use client";
 
 import * as turf from "@turf/turf";
-import { Trash2 } from "lucide-react";
-import { useMemo } from "react";
-import { CRUISE_SPEED_MPS, type Waypoint } from "@/types/mission";
+import { AlertTriangle, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  CRUISE_SPEED_MPS,
+  DEFAULT_BATTERY_CAPACITY_MAH,
+  DEFAULT_BATTERY_VOLTAGE_V,
+  DEFAULT_VEHICLE_WEIGHT_KG,
+  HOVER_POWER_W_PER_KG,
+  USABLE_BATTERY_FRACTION,
+  type Waypoint,
+} from "@/types/mission";
 
 type Props = {
   waypoints: Waypoint[];
@@ -65,7 +73,29 @@ export default function ControlPanel({
     return sum;
   }, [waypoints, isClosedLoop]);
 
-  const etaSeconds = totalMeters / CRUISE_SPEED_MPS;
+  const [vehicleWeight, setVehicleWeight] = useState(DEFAULT_VEHICLE_WEIGHT_KG);
+  const [batteryCapacity, setBatteryCapacity] = useState(
+    DEFAULT_BATTERY_CAPACITY_MAH,
+  );
+  const [batteryVoltage, setBatteryVoltage] = useState(
+    DEFAULT_BATTERY_VOLTAGE_V,
+  );
+
+  // Time to fly the plotted path at the fixed ground speed.
+  const pathSeconds = totalMeters / CRUISE_SPEED_MPS;
+
+  // Physics-based endurance from the battery/vehicle configuration.
+  const totalEnergyWh = (batteryVoltage * batteryCapacity) / 1000;
+  const hoverPowerW = vehicleWeight * HOVER_POWER_W_PER_KG;
+  const maxFlightMinutes =
+    hoverPowerW > 0
+      ? (totalEnergyWh / hoverPowerW) * 60 * USABLE_BATTERY_FRACTION
+      : 0;
+  const maxFlightSeconds = maxFlightMinutes * 60;
+
+  const insufficientRange =
+    totalMeters > 0 && pathSeconds > maxFlightSeconds;
+
   const mavlink = useMemo(() => toMavlink(waypoints), [waypoints]);
 
   return (
@@ -88,8 +118,12 @@ export default function ControlPanel({
         </div>
         <div>
           <div className="text-zinc-500">Est. Flight Time</div>
-          <div className="text-lg font-mono text-sky-400">
-            {formatDuration(etaSeconds)}
+          <div
+            className={`text-lg font-mono ${
+              insufficientRange ? "text-red-500" : "text-sky-400"
+            }`}
+          >
+            {formatDuration(pathSeconds)}
           </div>
         </div>
         <div className="col-span-2 text-[10px] text-zinc-600">
@@ -100,6 +134,25 @@ export default function ControlPanel({
             </span>
           )}
         </div>
+        <div className="col-span-2 flex items-center justify-between text-[10px] text-zinc-600">
+          <span>
+            Max endurance{" "}
+            <span
+              className={`font-mono ${
+                insufficientRange ? "text-red-400" : "text-zinc-400"
+              }`}
+            >
+              {formatDuration(maxFlightSeconds)}
+            </span>
+          </span>
+          <span>Hover power {hoverPowerW.toFixed(0)} W</span>
+        </div>
+        {insufficientRange && (
+          <div className="col-span-2 flex items-center gap-2 rounded border border-red-500/50 bg-red-500/10 px-2 py-1.5 text-[11px] font-semibold text-red-400">
+            <AlertTriangle size={14} className="shrink-0" />
+            BATTERY WARNING: INSUFFICIENT RANGE
+          </div>
+        )}
       </section>
 
       <section className="flex flex-col border-b border-zinc-800">
@@ -165,7 +218,54 @@ export default function ControlPanel({
         </div>
       </section>
 
-      <section className="flex min-h-[220px] flex-1 flex-col overflow-hidden">
+      <section className="border-b border-zinc-800 px-4 py-3">
+        <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-400">
+          Vehicle Configuration
+        </h2>
+        <div className="grid grid-cols-3 gap-2 text-[10px]">
+          <label className="flex flex-col gap-1">
+            <span className="text-zinc-500">Weight (kg)</span>
+            <input
+              type="number"
+              value={vehicleWeight}
+              min={0}
+              step={0.1}
+              onChange={(e) => setVehicleWeight(Number(e.target.value))}
+              className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-zinc-100 outline-none focus:border-sky-500"
+            />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-zinc-500">Capacity (mAh)</span>
+            <input
+              type="number"
+              value={batteryCapacity}
+              min={0}
+              step={100}
+              onChange={(e) => setBatteryCapacity(Number(e.target.value))}
+              className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-zinc-100 outline-none focus:border-sky-500"
+            />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-zinc-500">Voltage (V)</span>
+            <input
+              type="number"
+              value={batteryVoltage}
+              min={0}
+              step={0.1}
+              onChange={(e) => setBatteryVoltage(Number(e.target.value))}
+              className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-zinc-100 outline-none focus:border-sky-500"
+            />
+          </label>
+        </div>
+        <div className="mt-2 text-[10px] text-zinc-600">
+          Pack energy{" "}
+          <span className="font-mono text-zinc-400">
+            {totalEnergyWh.toFixed(1)} Wh
+          </span>
+        </div>
+      </section>
+
+      <section className="flex min-h-[180px] flex-1 flex-col overflow-hidden">
         <div className="border-b border-zinc-800 px-4 py-2 text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
           MAVLink Preview
         </div>
