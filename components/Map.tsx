@@ -76,11 +76,33 @@ export default function Map({
   }
 
   return (
-    <MapContainer
-      center={[17.6805, 74.0183]}
-      zoom={INITIAL_ZOOM}
-      style={{ width: "100%", height: "100%" }}
-    >
+    <>
+      <svg style={{ width: 0, height: 0, position: "absolute" }}>
+        <defs>
+          <pattern
+            id="hazard-lines"
+            width="10"
+            height="10"
+            patternTransform="rotate(45)"
+            patternUnits="userSpaceOnUse"
+          >
+            <line
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="10"
+              stroke="#f97316"
+              strokeWidth="2"
+              opacity="0.5"
+            />
+          </pattern>
+        </defs>
+      </svg>
+      <MapContainer
+        center={[17.6805, 74.0183]}
+        zoom={INITIAL_ZOOM}
+        style={{ width: "100%", height: "100%" }}
+      >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -107,8 +129,8 @@ export default function Map({
           pathOptions={{
             color: "#38bdf8",
             weight: 3,
-            fillColor: "orange",
-            fillOpacity: 0.3,
+            fillColor: "url(#hazard-lines)",
+            fillOpacity: 1,
           }}
         />
       ) : (
@@ -119,6 +141,7 @@ export default function Map({
           />
         )
       )}
-    </MapContainer>
+      </MapContainer>
+    </>
   );
 }
