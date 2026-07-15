@@ -4,11 +4,18 @@ import * as turf from "@turf/turf";
 import { AlertTriangle, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
+  AIR_DENSITY_KG_M3,
   CRUISE_SPEED_MPS,
   DEFAULT_BATTERY_CAPACITY_MAH,
   DEFAULT_BATTERY_VOLTAGE_V,
+  DEFAULT_MOTOR_KV,
+  DEFAULT_PROP_DIAMETER_IN,
+  DEFAULT_PROP_PITCH_IN,
   DEFAULT_VEHICLE_WEIGHT_KG,
-  HOVER_POWER_W_PER_KG,
+  GRAVITY_MPS2,
+  HOVER_EFFICIENCY_LOSS,
+  INCH_TO_METERS,
+  PROP_COUNT,
   USABLE_BATTERY_FRACTION,
   type Waypoint,
 } from "@/types/mission";
@@ -80,13 +87,27 @@ export default function ControlPanel({
   const [batteryVoltage, setBatteryVoltage] = useState(
     DEFAULT_BATTERY_VOLTAGE_V,
   );
+  const [motorKV, setMotorKV] = useState(DEFAULT_MOTOR_KV);
+  const [propDiameter, setPropDiameter] = useState(DEFAULT_PROP_DIAMETER_IN);
+  const [propPitch, setPropPitch] = useState(DEFAULT_PROP_PITCH_IN);
 
   // Time to fly the plotted path at the fixed ground speed.
   const pathSeconds = totalMeters / CRUISE_SPEED_MPS;
 
+  // Hover power via momentum theory (disk loading).
+  const propRadiusM = (propDiameter * INCH_TO_METERS) / 2;
+  const totalDiskAreaM2 = Math.PI * propRadiusM * propRadiusM * PROP_COUNT;
+  const thrustN = vehicleWeight * GRAVITY_MPS2;
+  const idealHoverPowerW =
+    totalDiskAreaM2 > 0
+      ? Math.sqrt(
+          Math.pow(thrustN, 3) / (2 * AIR_DENSITY_KG_M3 * totalDiskAreaM2),
+        )
+      : 0;
+  const hoverPowerW = idealHoverPowerW * HOVER_EFFICIENCY_LOSS;
+
   // Physics-based endurance from the battery/vehicle configuration.
   const totalEnergyWh = (batteryVoltage * batteryCapacity) / 1000;
-  const hoverPowerW = vehicleWeight * HOVER_POWER_W_PER_KG;
   const maxFlightMinutes =
     hoverPowerW > 0
       ? (totalEnergyWh / hoverPowerW) * 60 * USABLE_BATTERY_FRACTION
@@ -146,6 +167,10 @@ export default function ControlPanel({
             </span>
           </span>
           <span>Hover power {hoverPowerW.toFixed(0)} W</span>
+        </div>
+        <div className="col-span-2 text-[9px] leading-snug text-zinc-600">
+          * Estimates assume standard sea-level air density and negligible
+          aerodynamic drag. Real flight times will vary.
         </div>
         {insufficientRange && (
           <div className="col-span-2 flex items-center gap-2 rounded border border-red-500/50 bg-red-500/10 px-2 py-1.5 text-[11px] font-semibold text-red-400">
@@ -256,11 +281,52 @@ export default function ControlPanel({
               className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-zinc-100 outline-none focus:border-sky-500"
             />
           </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-zinc-500">Motor (KV)</span>
+            <input
+              type="number"
+              value={motorKV}
+              min={0}
+              step={10}
+              onChange={(e) => setMotorKV(Number(e.target.value))}
+              className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-zinc-100 outline-none focus:border-sky-500"
+            />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-zinc-500">Prop ⌀ (in)</span>
+            <input
+              type="number"
+              value={propDiameter}
+              min={0}
+              step={0.5}
+              onChange={(e) => setPropDiameter(Number(e.target.value))}
+              className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-zinc-100 outline-none focus:border-sky-500"
+            />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-zinc-500">Pitch (in)</span>
+            <input
+              type="number"
+              value={propPitch}
+              min={0}
+              step={0.1}
+              onChange={(e) => setPropPitch(Number(e.target.value))}
+              className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-zinc-100 outline-none focus:border-sky-500"
+            />
+          </label>
         </div>
-        <div className="mt-2 text-[10px] text-zinc-600">
-          Pack energy{" "}
-          <span className="font-mono text-zinc-400">
-            {totalEnergyWh.toFixed(1)} Wh
+        <div className="mt-2 flex items-center justify-between text-[10px] text-zinc-600">
+          <span>
+            Pack energy{" "}
+            <span className="font-mono text-zinc-400">
+              {totalEnergyWh.toFixed(1)} Wh
+            </span>
+          </span>
+          <span>
+            Disk area{" "}
+            <span className="font-mono text-zinc-400">
+              {totalDiskAreaM2.toFixed(3)} m²
+            </span>
           </span>
         </div>
       </section>
