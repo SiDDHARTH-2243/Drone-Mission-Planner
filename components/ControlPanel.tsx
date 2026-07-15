@@ -1,11 +1,11 @@
 "use client";
 
 import * as turf from "@turf/turf";
-import { AlertTriangle, Trash2, X } from "lucide-react";
+import { AlertTriangle, Trash2, Undo2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
   AIR_DENSITY_KG_M3,
-  CRUISE_SPEED_MPS,
+  DEFAULT_CRUISE_SPEED_MPS,
   DEFAULT_BATTERY_CAPACITY_MAH,
   DEFAULT_BATTERY_VOLTAGE_V,
   DEFAULT_MOTOR_KV,
@@ -25,6 +25,7 @@ type Props = {
   isClosedLoop: boolean;
   onAltitudeChange: (id: string, altitude: number) => void;
   onDeleteWaypoint: (id: string) => void;
+  onUndo: () => void;
   onClear: () => void;
 };
 
@@ -61,6 +62,7 @@ export default function ControlPanel({
   isClosedLoop,
   onAltitudeChange,
   onDeleteWaypoint,
+  onUndo,
   onClear,
 }: Props) {
   const totalMeters = useMemo(() => {
@@ -92,9 +94,10 @@ export default function ControlPanel({
   const [motorKV, setMotorKV] = useState(DEFAULT_MOTOR_KV);
   const [propDiameter, setPropDiameter] = useState(DEFAULT_PROP_DIAMETER_IN);
   const [propPitch, setPropPitch] = useState(DEFAULT_PROP_PITCH_IN);
+  const [cruiseSpeed, setCruiseSpeed] = useState(DEFAULT_CRUISE_SPEED_MPS);
 
-  // Time to fly the plotted path at the fixed ground speed.
-  const pathSeconds = totalMeters / CRUISE_SPEED_MPS;
+  // Time to fly the plotted path at the configured ground speed.
+  const pathSeconds = cruiseSpeed > 0 ? totalMeters / cruiseSpeed : 0;
 
   // Hover power via momentum theory (disk loading).
   const propRadiusM = (propDiameter * INCH_TO_METERS) / 2;
@@ -150,7 +153,7 @@ export default function ControlPanel({
           </div>
         </div>
         <div className="col-span-2 text-[10px] text-zinc-600">
-          Cruise speed {CRUISE_SPEED_MPS} m/s · {waypoints.length} waypoints
+          Cruise speed {cruiseSpeed} m/s · {waypoints.length} waypoints
           {isClosedLoop && (
             <span className="ml-2 rounded bg-emerald-500/20 px-1.5 py-0.5 font-semibold uppercase text-emerald-400">
               Loop Closed
@@ -188,15 +191,26 @@ export default function ControlPanel({
             <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
               Waypoints
             </h2>
-            <button
-              type="button"
-              onClick={onClear}
-              disabled={waypoints.length === 0}
-              className="flex items-center gap-1 rounded border border-zinc-700 px-2 py-1 text-[11px] text-zinc-300 transition hover:border-red-500 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-zinc-700 disabled:hover:text-zinc-300"
-            >
-              <Trash2 size={12} />
-              Clear Mission
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onUndo}
+                disabled={waypoints.length === 0 && !isClosedLoop}
+                className="flex items-center gap-1 rounded border border-zinc-700 px-2 py-1 text-[11px] text-zinc-300 transition hover:border-sky-500 hover:text-sky-400 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-zinc-700 disabled:hover:text-zinc-300"
+              >
+                <Undo2 size={12} />
+                Undo
+              </button>
+              <button
+                type="button"
+                onClick={onClear}
+                disabled={waypoints.length === 0}
+                className="flex items-center gap-1 rounded border border-zinc-700 px-2 py-1 text-[11px] text-zinc-300 transition hover:border-red-500 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-zinc-700 disabled:hover:text-zinc-300"
+              >
+                <Trash2 size={12} />
+                Clear Mission
+              </button>
+            </div>
           </div>
 
           {waypoints.length === 0 ? (
@@ -324,6 +338,17 @@ export default function ControlPanel({
               min={0}
               step={0.1}
               onChange={(e) => setPropPitch(Number(e.target.value))}
+              className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-zinc-100 outline-none focus:border-sky-500"
+            />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-zinc-500">Cruise (m/s)</span>
+            <input
+              type="number"
+              value={cruiseSpeed}
+              min={0}
+              step={0.5}
+              onChange={(e) => setCruiseSpeed(Number(e.target.value))}
               className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-zinc-100 outline-none focus:border-sky-500"
             />
           </label>

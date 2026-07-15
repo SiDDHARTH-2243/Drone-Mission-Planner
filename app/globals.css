@@ -15,18 +15,20 @@ body {
   border: none;
 }
 
-.wp-pin {
+/* Inner pin div; width/height/font-size/border-width are set inline so the
+   marker can scale with the current zoom level. */
+.waypoint-marker > div {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  box-sizing: border-box;
   border-radius: 9999px;
   background: #0ea5e9;
   color: white;
-  font-size: 12px;
   font-weight: 700;
-  border: 2px solid white;
+  border-style: solid;
+  border-color: white;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
   font-family: ui-sans-serif, system-ui, sans-serif;
+  line-height: 1;
 }

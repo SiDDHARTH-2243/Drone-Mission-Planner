@@ -7,8 +7,8 @@ export type Waypoint = {
 
 export const DEFAULT_ALTITUDE = 30;
 
-// Ground speed used to estimate how long the plotted path takes to fly.
-export const CRUISE_SPEED_MPS = 10;
+// Default ground speed used to estimate how long the plotted path takes to fly.
+export const DEFAULT_CRUISE_SPEED_MPS = 10;
 
 // Vehicle configuration defaults for the physics-based endurance estimate.
 export const DEFAULT_VEHICLE_WEIGHT_KG = 2.5;

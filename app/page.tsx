@@ -67,6 +67,15 @@ export default function Home() {
     });
   }, []);
 
+  const undo = useCallback(() => {
+    // Closing the loop is the most recent action; undo it first by reopening.
+    if (isClosedLoop) {
+      setIsClosedLoop(false);
+      return;
+    }
+    setWaypoints((prev) => prev.slice(0, -1));
+  }, [isClosedLoop]);
+
   const clearMission = useCallback(() => {
     setWaypoints([]);
     setIsClosedLoop(false);
@@ -87,6 +96,7 @@ export default function Home() {
         isClosedLoop={isClosedLoop}
         onAltitudeChange={updateAltitude}
         onDeleteWaypoint={deleteWaypoint}
+        onUndo={undo}
         onClear={clearMission}
       />
     </main>
