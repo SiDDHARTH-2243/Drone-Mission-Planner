@@ -20,10 +20,16 @@ const Map = dynamic(() => import("@/components/Map"), { ssr: false });
 
 const LOOP_SNAP_METERS = 25;
 
-const ECOSYSTEM_LINKS = [
-  { label: "DocTech", href: "#" },
-  { label: "FTA Official Site", href: "#" },
-  { label: "METS Innovation Hub", href: "#" },
+type EcosystemLink = {
+  label: string;
+  href?: string;
+  comingSoon?: boolean;
+};
+
+const ECOSYSTEM_LINKS: EcosystemLink[] = [
+  { label: "FutureTech Automation", href: "https://futuretechautomation.in" },
+  { label: "Mets Innovative", href: "https://metsinnovative.in/" },
+  { label: "DocTech by FTA", comingSoon: true },
 ];
 
 export default function Home() {
@@ -178,18 +184,32 @@ export default function Home() {
                   <div className="border-b border-zinc-800 px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
                     Explore More
                   </div>
-                  {ECOSYSTEM_LINKS.map((link) => (
-                    <a
-                      key={link.label}
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => setMenuOpen(false)}
-                      className="block px-3 py-2 text-terminal-sm font-terminal-sm text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-cyan-neon"
-                    >
-                      {link.label}
-                    </a>
-                  ))}
+                  {ECOSYSTEM_LINKS.map((link) =>
+                    link.comingSoon ? (
+                      <a
+                        key={link.label}
+                        aria-disabled="true"
+                        onClick={(e) => e.preventDefault()}
+                        className="flex cursor-not-allowed items-center gap-1.5 px-3 py-2 text-terminal-sm font-terminal-sm text-zinc-500"
+                      >
+                        {link.label}
+                        <span className="text-[10px] text-blue-400/70">
+                          (Coming soon...)
+                        </span>
+                      </a>
+                    ) : (
+                      <a
+                        key={link.label}
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setMenuOpen(false)}
+                        className="block px-3 py-2 text-terminal-sm font-terminal-sm text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-cyan-neon"
+                      >
+                        {link.label}
+                      </a>
+                    ),
+                  )}
                 </div>
               </>
             )}
