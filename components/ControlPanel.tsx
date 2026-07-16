@@ -1,6 +1,7 @@
 "use client";
 
 import * as turf from "@turf/turf";
+import { Info } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
   AIR_DENSITY_KG_M3,
@@ -33,6 +34,33 @@ function formatClock(seconds: number) {
   const m = Math.floor(seconds / 60);
   const s = Math.round(seconds % 60);
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+}
+
+// CSS-only hover tooltip (Tailwind group/group-hover, no dependencies).
+// align="right" opens the box leftward so triggers near the panel's right
+// edge do not overflow.
+function InfoTooltip({
+  text,
+  align = "left",
+}: {
+  text: string;
+  align?: "left" | "right";
+}) {
+  return (
+    <span className="group relative inline-flex items-center align-middle">
+      <Info
+        size={14}
+        className="text-zinc-600 transition-colors group-hover:text-white"
+      />
+      <span
+        className={`pointer-events-none absolute top-full z-50 mt-1 hidden w-48 rounded border border-zinc-700 bg-zinc-900 p-2 text-xs font-normal normal-case leading-snug tracking-normal text-zinc-300 shadow-lg group-hover:block ${
+          align === "right" ? "right-0" : "left-0"
+        }`}
+      >
+        {text}
+      </span>
+    </span>
+  );
 }
 
 function toMavlink(waypoints: Waypoint[]) {
@@ -124,13 +152,56 @@ export default function ControlPanel({
     set: (n: number) => void;
     step: number;
     suffix: string;
+    tip: string;
   }[] = [
-    { label: "Mass", value: vehicleWeight, set: setVehicleWeight, step: 0.1, suffix: "kg" },
-    { label: "Cap", value: batteryCapacity, set: setBatteryCapacity, step: 100, suffix: "mAh" },
-    { label: "Volt", value: batteryVoltage, set: setBatteryVoltage, step: 0.1, suffix: "V" },
-    { label: "Motor", value: motorKV, set: setMotorKV, step: 10, suffix: "KV" },
-    { label: "Prop", value: propDiameter, set: setPropDiameter, step: 0.5, suffix: "in" },
-    { label: "Pitch", value: propPitch, set: setPropPitch, step: 0.1, suffix: "in" },
+    {
+      label: "Mass",
+      value: vehicleWeight,
+      set: setVehicleWeight,
+      step: 0.1,
+      suffix: "kg",
+      tip: "Total takeoff weight including airframe, battery, and payload.",
+    },
+    {
+      label: "Cap",
+      value: batteryCapacity,
+      set: setBatteryCapacity,
+      step: 100,
+      suffix: "mAh",
+      tip: "Total electrical energy storage available in the battery.",
+    },
+    {
+      label: "Volt",
+      value: batteryVoltage,
+      set: setBatteryVoltage,
+      step: 0.1,
+      suffix: "V",
+      tip: "Nominal battery voltage determining maximum motor RPM.",
+    },
+    {
+      label: "Motor",
+      value: motorKV,
+      set: setMotorKV,
+      step: 10,
+      suffix: "KV",
+      tip: "Motor velocity constant; RPM per volt of electricity.",
+    },
+    {
+      label: "Prop",
+      value: propDiameter,
+      set: setPropDiameter,
+      step: 0.5,
+      suffix: "in",
+      tip: "Total width of the propeller, dictating the aerodynamic disk area.",
+    },
+    {
+      label: "Pitch",
+      value: propPitch,
+      set: setPropPitch,
+      step: 0.1,
+      suffix: "in",
+      tip: "Distance the propeller moves forward in one full rotation.",
+    },
   ];
 
   return (
@@ -171,8 +242,9 @@ export default function ControlPanel({
           </div>
           <div className="grid grid-cols-3 items-center gap-2">
             <div className="flex flex-col">
-              <label className="mb-1 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
-                Crz Spd
+              <label className="mb-1 flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
+                Cruise Speed
+                <InfoTooltip text="Target velocity used to calculate estimated mission completion time." />
               </label>
               <div className="flex">
                 <input
@@ -231,7 +303,8 @@ export default function ControlPanel({
           <div className="mb-3 flex items-center justify-between">
             <h3 className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
               <span className="material-symbols-outlined text-[14px]">route</span>{" "}
-              WPT MGR
+              Waypoint Manager
+              <InfoTooltip text="Sequential spatial coordinates defining the autonomous flight path." />
             </h3>
             <div className="flex gap-1.5">
               <button
@@ -355,17 +428,22 @@ export default function ControlPanel({
         <section className="border-b border-zinc-800 p-4">
           <h3 className="mb-3 flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
             <span className="material-symbols-outlined text-[14px]">build</span>{" "}
-            CONFIG
+            Vehicle Configuration
+            <InfoTooltip text="Physical drone parameters used to calculate momentum, thrust, and power consumption." />
           </h3>
           <div className="rounded-none border border-zinc-800 bg-zinc-950 p-3">
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-              {configFields.map((f) => (
+              {configFields.map((f, i) => (
                 <div
                   key={f.label}
                   className="flex items-center justify-between border-b border-zinc-900 pb-1"
                 >
-                  <label className="text-[10px] font-mono uppercase text-zinc-600">
+                  <label className="flex items-center gap-1 text-[10px] font-mono uppercase text-zinc-600">
                     {f.label}
+                    <InfoTooltip
+                      text={f.tip}
+                      align={i % 2 === 1 ? "right" : "left"}
+                    />
                   </label>
                   <div className="flex items-baseline gap-0.5">
                     <input
@@ -400,6 +478,7 @@ export default function ControlPanel({
                 terminal
               </span>{" "}
               MAVLink Telemetry Stream
+              <InfoTooltip text="Live JSON output of the drone's subsystem states and routing commands." />
             </h3>
             <div className="h-2 w-2 animate-pulse rounded-none bg-green-500" />
           </div>
