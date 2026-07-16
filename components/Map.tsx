@@ -1,6 +1,7 @@
 "use client";
 
 import "leaflet/dist/leaflet.css";
+import * as turf from "@turf/turf";
 import L from "leaflet";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -39,6 +40,7 @@ type MapProps = {
   onGenerateShape: (lat: number, lng: number) => void;
   onMoveWaypoint: (id: string, lat: number, lng: number) => void;
   onInsertWaypoint: (index: number, lat: number, lng: number) => void;
+  onTranslateShape: (deltaLat: number, deltaLng: number) => void;
 };
 
 const TILE_LAYERS = {
@@ -53,6 +55,10 @@ const TILE_LAYERS = {
       'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
   },
 } as const;
+
+// Transparent labels-only overlay stacked above the satellite imagery.
+const SATELLITE_LABELS_URL =
+  "https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png";
 
 // Runs toolbar map actions from inside the MapContainer, where useMap() always
 // resolves to the live map (avoids StrictMode's detached-instance pitfalls).
@@ -203,6 +209,28 @@ function computeMidpoints(
   return mids;
 }
 
+// Distinct white "anchor" node used to translate the whole shape.
+function anchorIcon() {
+  return L.divIcon({
+    className: "mission-anchor",
+    html: `<div class="flex items-center justify-center border-2 border-orange-500 bg-white shadow-md" style="width:22px;height:22px;">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>
+    </div>`,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+  });
+}
+
+// Geographic center of the closed mission polygon, as [lat, lng].
+function shapeCentroid(waypoints: Waypoint[]): [number, number] | null {
+  if (waypoints.length < 3) return null;
+  const ring = waypoints.map((w) => [w.lng, w.lat]);
+  ring.push([waypoints[0].lng, waypoints[0].lat]); // close the ring
+  const c = turf.centroid(turf.polygon([ring]));
+  const [lng, lat] = c.geometry.coordinates;
+  return [lat, lng];
+}
+
 export default function Map({
   waypoints,
   isClosedLoop,
@@ -215,17 +243,21 @@ export default function Map({
   onGenerateShape,
   onMoveWaypoint,
   onInsertWaypoint,
+  onTranslateShape,
 }: MapProps) {
   const [currentZoom, setCurrentZoom] = useState(INITIAL_ZOOM);
   const markerSize = markerSizeForZoom(currentZoom);
-  const tiles = satellite ? TILE_LAYERS.satellite : TILE_LAYERS.vector;
 
   const path: [number, number][] = waypoints.map((w) => [w.lat, w.lng]);
   if (isClosedLoop && waypoints.length > 0) {
     path.push([waypoints[0].lat, waypoints[0].lng]);
   }
 
-  const midpoints = computeMidpoints(waypoints, isClosedLoop);
+  // Midpoint ghosts and the translation anchor only apply in free-draw mode.
+  const midpoints =
+    drawMode === "free" ? computeMidpoints(waypoints, isClosedLoop) : [];
+  const anchor =
+    drawMode === "free" && isClosedLoop ? shapeCentroid(waypoints) : null;
 
   return (
     <>
@@ -255,11 +287,27 @@ export default function Map({
         zoom={INITIAL_ZOOM}
         style={{ width: "100%", height: "100%" }}
       >
-      <TileLayer
-        key={satellite ? "satellite" : "vector"}
-        attribution={tiles.attribution}
-        url={tiles.url}
-      />
+      {satellite ? (
+        <>
+          <TileLayer
+            key="satellite"
+            attribution={TILE_LAYERS.satellite.attribution}
+            url={TILE_LAYERS.satellite.url}
+          />
+          {/* Transparent labels overlay floats above the imagery. */}
+          <TileLayer
+            key="satellite-labels"
+            url={SATELLITE_LABELS_URL}
+            zIndex={10}
+          />
+        </>
+      ) : (
+        <TileLayer
+          key="vector"
+          attribution={TILE_LAYERS.vector.attribution}
+          url={TILE_LAYERS.vector.url}
+        />
+      )}
       <MapCommands
         waypoints={waypoints}
         focusNonce={focusNonce}
@@ -298,6 +346,21 @@ export default function Map({
           }}
         />
       ))}
+      {anchor && (
+        <Marker
+          key="mission-anchor"
+          position={anchor}
+          icon={anchorIcon()}
+          draggable={true}
+          eventHandlers={{
+            dragend: (e) => {
+              const marker = e.target as L.Marker;
+              const { lat, lng } = marker.getLatLng();
+              onTranslateShape(lat - anchor[0], lng - anchor[1]);
+            },
+          }}
+        />
+      )}
       {isClosedLoop && waypoints.length >= 3 ? (
         <Polygon
           positions={waypoints.map((w) => [w.lat, w.lng])}

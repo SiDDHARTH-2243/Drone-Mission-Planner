@@ -80,6 +80,17 @@ export default function Home() {
 
   const closeLoop = useCallback(() => setIsClosedLoop(true), []);
 
+  // Translate the whole shape by the anchor's drag delta, preserving geometry.
+  const translateShape = useCallback((deltaLat: number, deltaLng: number) => {
+    setWaypoints((prev) =>
+      prev.map((wp) => ({
+        ...wp,
+        lat: wp.lat + deltaLat,
+        lng: wp.lng + deltaLng,
+      })),
+    );
+  }, []);
+
   // Shape presets: the click is the shape center; build the polygon with Turf,
   // overwrite the route, close the loop, and drop back to free draw.
   const generateShape = useCallback(
@@ -334,6 +345,7 @@ export default function Home() {
             onGenerateShape={generateShape}
             onMoveWaypoint={moveWaypoint}
             onInsertWaypoint={insertWaypoint}
+            onTranslateShape={translateShape}
           />
 
           {/* Floating map utility toolbar */}
