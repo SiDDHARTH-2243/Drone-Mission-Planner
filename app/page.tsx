@@ -1,7 +1,16 @@
 "use client";
 
 import * as turf from "@turf/turf";
-import { ChevronDown, Crosshair, Map as MapIcon, Maximize, User } from "lucide-react";
+import {
+  ChevronDown,
+  Crosshair,
+  Map as MapIcon,
+  Maximize,
+  Radio,
+  Satellite,
+  Search,
+  User,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import { useCallback, useState } from "react";
 import ControlPanel from "@/components/ControlPanel";
@@ -116,79 +125,75 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Center: map utility toolbar */}
-        <div className="flex items-center gap-1 rounded-none border border-zinc-700 bg-zinc-900 p-1">
-          <button
-            type="button"
-            onClick={toggleSatellite}
-            title={satellite ? "Switch to vector map" : "Switch to satellite"}
-            className={`flex items-center gap-1.5 rounded-none px-2 py-1 text-[10px] font-mono uppercase tracking-widest transition-colors ${
-              satellite
-                ? "bg-cyan-neon/20 text-cyan-neon"
-                : "text-zinc-400 hover:bg-zinc-800 hover:text-cyan-neon"
-            }`}
-          >
-            <MapIcon size={16} />
-            {satellite ? "SAT" : "VEC"}
-          </button>
-          <button
-            type="button"
-            onClick={centerOnFirst}
-            disabled={waypoints.length === 0}
-            title="Center on Waypoint 1"
-            className="rounded-none p-1 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-cyan-neon disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <Crosshair size={16} />
-          </button>
-          <button
-            type="button"
-            onClick={fitToPath}
-            disabled={waypoints.length === 0}
-            title="Fit map to flight path"
-            className="rounded-none p-1 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-cyan-neon disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <Maximize size={16} />
-          </button>
-        </div>
+        {/* Right: global tools — search, status icons, account dropdown */}
+        <div className="flex items-center justify-end gap-4">
+          <div className="relative hidden md:block">
+            <Search
+              size={14}
+              className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500"
+            />
+            <input
+              type="text"
+              placeholder="Search parameters..."
+              className="w-56 rounded border border-zinc-800 bg-zinc-900 py-1.5 pl-8 pr-3 text-sm text-zinc-200 placeholder-zinc-500 transition-colors focus:border-cyan-neon focus:outline-none"
+            />
+          </div>
 
-        {/* Right: account / ecosystem dropdown */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setMenuOpen((o) => !o)}
-            className="flex items-center gap-1 rounded-none p-1 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-cyan-neon"
-          >
-            <User size={18} />
-            <ChevronDown size={14} />
-          </button>
-          {menuOpen && (
-            <>
-              <button
-                type="button"
-                aria-hidden
-                tabIndex={-1}
-                onClick={() => setMenuOpen(false)}
-                className="fixed inset-0 z-40 cursor-default"
-              />
-              <div className="absolute right-0 top-full z-50 mt-1 w-56 border border-zinc-700 bg-zinc-900 shadow-lg">
-                <div className="border-b border-zinc-800 px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
-                  Explore More
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              title="GPS status"
+              className="text-zinc-400 transition-colors hover:text-white"
+            >
+              <Satellite size={18} />
+            </button>
+            <button
+              type="button"
+              title="Radio link status"
+              className="text-zinc-400 transition-colors hover:text-white"
+            >
+              <Radio size={18} />
+            </button>
+          </div>
+
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((o) => !o)}
+              className="flex items-center gap-1 rounded-none p-1 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-cyan-neon"
+            >
+              <User size={18} />
+              <ChevronDown size={14} />
+            </button>
+            {menuOpen && (
+              <>
+                <button
+                  type="button"
+                  aria-hidden
+                  tabIndex={-1}
+                  onClick={() => setMenuOpen(false)}
+                  className="fixed inset-0 z-40 cursor-default"
+                />
+                <div className="absolute right-0 top-full z-50 mt-1 w-56 border border-zinc-700 bg-zinc-900 shadow-lg">
+                  <div className="border-b border-zinc-800 px-3 py-2 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
+                    Explore More
+                  </div>
+                  {ECOSYSTEM_LINKS.map((link) => (
+                    <a
+                      key={link.label}
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setMenuOpen(false)}
+                      className="block px-3 py-2 text-terminal-sm font-terminal-sm text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-cyan-neon"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
                 </div>
-                {ECOSYSTEM_LINKS.map((link) => (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setMenuOpen(false)}
-                    className="block px-3 py-2 text-terminal-sm font-terminal-sm text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-cyan-neon"
-                  >
-                    {link.label}
-                  </a>
-                ))}
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </header>
 
@@ -204,6 +209,41 @@ export default function Home() {
             onAddWaypoint={handleMapClick}
             onMoveWaypoint={moveWaypoint}
           />
+
+          {/* Floating map utility toolbar */}
+          <div className="absolute right-4 top-4 z-[1000] flex gap-1 rounded-md border border-zinc-800 bg-zinc-950/90 p-1 shadow-xl backdrop-blur-sm">
+            <button
+              type="button"
+              onClick={toggleSatellite}
+              title={satellite ? "Switch to vector map" : "Switch to satellite"}
+              className={`flex items-center gap-1.5 rounded px-2 py-1 text-[10px] font-mono uppercase tracking-widest transition-colors ${
+                satellite
+                  ? "bg-cyan-neon/20 text-cyan-neon"
+                  : "text-zinc-400 hover:bg-zinc-800 hover:text-cyan-neon"
+              }`}
+            >
+              <MapIcon size={16} />
+              {satellite ? "SAT" : "VEC"}
+            </button>
+            <button
+              type="button"
+              onClick={centerOnFirst}
+              disabled={waypoints.length === 0}
+              title="Center on Waypoint 1"
+              className="rounded p-1 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-cyan-neon disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Crosshair size={16} />
+            </button>
+            <button
+              type="button"
+              onClick={fitToPath}
+              disabled={waypoints.length === 0}
+              title="Fit map to flight path"
+              className="rounded p-1 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-cyan-neon disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Maximize size={16} />
+            </button>
+          </div>
         </div>
 
         <ControlPanel
