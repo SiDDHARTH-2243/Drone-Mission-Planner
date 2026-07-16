@@ -9,16 +9,30 @@ import {
   Radio,
   Satellite,
   Search,
+  Spline,
+  Square,
+  Triangle,
   User,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useCallback, useState } from "react";
 import ControlPanel from "@/components/ControlPanel";
+import type { DrawMode } from "@/components/Map";
 import { DEFAULT_ALTITUDE, type Waypoint } from "@/types/mission";
 
 const Map = dynamic(() => import("@/components/Map"), { ssr: false });
 
-const LOOP_SNAP_METERS = 25;
+const DRAW_MODES: { mode: DrawMode; label: string; Icon: typeof Square }[] = [
+  { mode: "free", label: "Free Draw", Icon: Spline },
+  { mode: "square", label: "Square", Icon: Square },
+  { mode: "triangle", label: "Triangle", Icon: Triangle },
+];
+
+function createWaypointId() {
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `wp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
 
 type EcosystemLink = {
   label: string;
@@ -41,6 +55,8 @@ export default function Home() {
   const [isLinkOpen, setIsLinkOpen] = useState(false);
   const [focusNonce, setFocusNonce] = useState(0);
   const [fitNonce, setFitNonce] = useState(0);
+  const [drawMode, setDrawMode] = useState<DrawMode>("free");
+  const [shapeRadius, setShapeRadius] = useState(0.5);
 
   // Opening one hardware-status popover closes the other.
   const toggleGps = useCallback(() => {
@@ -52,35 +68,43 @@ export default function Home() {
     setIsGpsOpen(false);
   }, []);
 
-  const handleMapClick = useCallback((lat: number, lng: number) => {
-    setWaypoints((prev) => {
-      if (prev.length >= 3) {
-        const first = prev[0];
-        const d = turf.distance(
-          turf.point([first.lng, first.lat]),
-          turf.point([lng, lat]),
-          { units: "meters" },
-        );
-        if (d <= LOOP_SNAP_METERS) {
-          setIsClosedLoop(true);
-          return prev;
-        }
-      }
-      setIsClosedLoop(false);
-      return [
-        ...prev,
-        {
-          id:
-            typeof crypto !== "undefined" && "randomUUID" in crypto
-              ? crypto.randomUUID()
-              : `wp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          lat,
-          lng,
-          altitude: DEFAULT_ALTITUDE,
-        },
-      ];
-    });
+  // Free-draw: append a waypoint (loop-closure snapping is handled in the map
+  // click handler via pixel distance).
+  const addWaypoint = useCallback((lat: number, lng: number) => {
+    setIsClosedLoop(false);
+    setWaypoints((prev) => [
+      ...prev,
+      { id: createWaypointId(), lat, lng, altitude: DEFAULT_ALTITUDE },
+    ]);
   }, []);
+
+  const closeLoop = useCallback(() => setIsClosedLoop(true), []);
+
+  // Shape presets: the click is the shape center; build the polygon with Turf,
+  // overwrite the route, close the loop, and drop back to free draw.
+  const generateShape = useCallback(
+    (lat: number, lng: number) => {
+      if (drawMode === "free") return;
+      const steps = drawMode === "square" ? 4 : 3;
+      const circle = turf.circle([lng, lat], shapeRadius, {
+        steps,
+        units: "kilometers",
+      });
+      const ring = circle.geometry.coordinates[0]; // [lng, lat][], closed ring
+      const corners = ring.slice(0, steps); // drop the duplicated closing point
+      setWaypoints(
+        corners.map(([clng, clat]) => ({
+          id: createWaypointId(),
+          lat: clat,
+          lng: clng,
+          altitude: DEFAULT_ALTITUDE,
+        })),
+      );
+      setIsClosedLoop(true);
+      setDrawMode("free");
+    },
+    [drawMode, shapeRadius],
+  );
 
   const updateAltitude = useCallback((id: string, altitude: number) => {
     setWaypoints((prev) =>
@@ -304,7 +328,10 @@ export default function Home() {
             satellite={satellite}
             focusNonce={focusNonce}
             fitNonce={fitNonce}
-            onAddWaypoint={handleMapClick}
+            drawMode={drawMode}
+            onAddWaypoint={addWaypoint}
+            onCloseLoop={closeLoop}
+            onGenerateShape={generateShape}
             onMoveWaypoint={moveWaypoint}
             onInsertWaypoint={insertWaypoint}
           />
@@ -342,6 +369,39 @@ export default function Home() {
             >
               <Maximize size={16} />
             </button>
+
+            <span className="mx-0.5 my-1 w-px bg-zinc-800" />
+
+            {/* Draw mode presets */}
+            {DRAW_MODES.map(({ mode, label, Icon }) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setDrawMode(mode)}
+                title={label}
+                className={`rounded p-1 transition-colors ${
+                  drawMode === mode
+                    ? "bg-orange-500/20 text-orange-500"
+                    : "text-zinc-400 hover:bg-zinc-800 hover:text-orange-500"
+                }`}
+              >
+                <Icon size={16} />
+              </button>
+            ))}
+
+            {/* Shape radius */}
+            <label className="ml-0.5 flex items-center gap-1 rounded bg-zinc-900 px-1.5 text-[10px] font-mono text-zinc-400">
+              <input
+                type="number"
+                min={0.05}
+                step={0.05}
+                value={shapeRadius}
+                onChange={(e) => setShapeRadius(Number(e.target.value))}
+                title="Shape radius (km)"
+                className="w-10 bg-transparent py-1 text-right tabular-nums text-zinc-100 focus:outline-none"
+              />
+              km
+            </label>
           </div>
         </div>
 

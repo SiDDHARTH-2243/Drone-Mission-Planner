@@ -22,14 +22,21 @@ const MARKER_MIN_PX = 15; // zoomed in
 const ZOOM_MIN = 10;
 const ZOOM_MAX = 18;
 
+export type DrawMode = "free" | "square" | "triangle";
+
+const LOOP_SNAP_PIXELS = 15;
+
 type MapProps = {
   waypoints: Waypoint[];
   isClosedLoop: boolean;
   satellite: boolean;
+  drawMode: DrawMode;
   // Incrementing counters trigger the matching map action from the toolbar.
   focusNonce: number;
   fitNonce: number;
   onAddWaypoint: (lat: number, lng: number) => void;
+  onCloseLoop: () => void;
+  onGenerateShape: (lat: number, lng: number) => void;
   onMoveWaypoint: (id: string, lat: number, lng: number) => void;
   onInsertWaypoint: (index: number, lat: number, lng: number) => void;
 };
@@ -97,14 +104,38 @@ function MapCommands({
 }
 
 function MapEvents({
+  waypoints,
+  drawMode,
   onAddWaypoint,
+  onCloseLoop,
+  onGenerateShape,
   onZoomChange,
 }: {
+  waypoints: Waypoint[];
+  drawMode: DrawMode;
   onAddWaypoint: (lat: number, lng: number) => void;
+  onCloseLoop: () => void;
+  onGenerateShape: (lat: number, lng: number) => void;
   onZoomChange: (zoom: number) => void;
 }) {
   const map = useMapEvents({
     click(e) {
+      // Shape presets: the click is the shape center.
+      if (drawMode !== "free") {
+        onGenerateShape(e.latlng.lat, e.latlng.lng);
+        return;
+      }
+      // Loop closure via pixel distance so snapping is zoom-independent.
+      if (waypoints.length >= 3) {
+        const firstPoint = map.latLngToContainerPoint([
+          waypoints[0].lat,
+          waypoints[0].lng,
+        ]);
+        if (e.containerPoint.distanceTo(firstPoint) < LOOP_SNAP_PIXELS) {
+          onCloseLoop();
+          return;
+        }
+      }
       onAddWaypoint(e.latlng.lat, e.latlng.lng);
     },
     zoomend() {
@@ -176,9 +207,12 @@ export default function Map({
   waypoints,
   isClosedLoop,
   satellite,
+  drawMode,
   focusNonce,
   fitNonce,
   onAddWaypoint,
+  onCloseLoop,
+  onGenerateShape,
   onMoveWaypoint,
   onInsertWaypoint,
 }: MapProps) {
@@ -231,7 +265,14 @@ export default function Map({
         focusNonce={focusNonce}
         fitNonce={fitNonce}
       />
-      <MapEvents onAddWaypoint={onAddWaypoint} onZoomChange={setCurrentZoom} />
+      <MapEvents
+        waypoints={waypoints}
+        drawMode={drawMode}
+        onAddWaypoint={onAddWaypoint}
+        onCloseLoop={onCloseLoop}
+        onGenerateShape={onGenerateShape}
+        onZoomChange={setCurrentZoom}
+      />
       {midpoints.map((mid) => (
         <Marker
           key={`ghost-${mid.insertIndex}-${mid.lat.toFixed(5)}-${mid.lng.toFixed(5)}`}
