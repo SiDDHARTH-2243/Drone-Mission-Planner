@@ -37,8 +37,20 @@ export default function Home() {
   const [isClosedLoop, setIsClosedLoop] = useState(false);
   const [satellite, setSatellite] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isGpsOpen, setIsGpsOpen] = useState(false);
+  const [isLinkOpen, setIsLinkOpen] = useState(false);
   const [focusNonce, setFocusNonce] = useState(0);
   const [fitNonce, setFitNonce] = useState(0);
+
+  // Opening one hardware-status popover closes the other.
+  const toggleGps = useCallback(() => {
+    setIsGpsOpen((o) => !o);
+    setIsLinkOpen(false);
+  }, []);
+  const toggleLink = useCallback(() => {
+    setIsLinkOpen((o) => !o);
+    setIsGpsOpen(false);
+  }, []);
 
   const handleMapClick = useCallback((lat: number, lng: number) => {
     setWaypoints((prev) => {
@@ -146,20 +158,65 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              title="GPS status"
-              className="text-zinc-400 transition-colors hover:text-white"
-            >
-              <Satellite size={18} />
-            </button>
-            <button
-              type="button"
-              title="Radio link status"
-              className="text-zinc-400 transition-colors hover:text-white"
-            >
-              <Radio size={18} />
-            </button>
+            {/* GPS status popover */}
+            <div className="relative">
+              <button
+                type="button"
+                title="GPS status"
+                onClick={toggleGps}
+                className={`transition-colors ${
+                  isGpsOpen
+                    ? "text-orange-500"
+                    : "text-zinc-400 hover:text-zinc-200"
+                }`}
+              >
+                <Satellite size={18} />
+              </button>
+              {isGpsOpen && (
+                <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-md border border-zinc-800 bg-zinc-950 p-3 text-xs shadow-2xl">
+                  <div className="grid grid-cols-2 gap-y-1.5 font-mono">
+                    <span className="text-zinc-400">STATUS:</span>
+                    <span className="text-right font-bold text-orange-500">
+                      3D RTK FIX
+                    </span>
+                    <span className="text-zinc-400">SATELLITES:</span>
+                    <span className="text-right text-zinc-200">14 LOCKED</span>
+                    <span className="text-zinc-400">HDOP:</span>
+                    <span className="text-right text-zinc-200">0.8m</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Telemetry link popover */}
+            <div className="relative">
+              <button
+                type="button"
+                title="Radio link status"
+                onClick={toggleLink}
+                className={`transition-colors ${
+                  isLinkOpen
+                    ? "text-orange-500"
+                    : "text-zinc-400 hover:text-zinc-200"
+                }`}
+              >
+                <Radio size={18} />
+              </button>
+              {isLinkOpen && (
+                <div className="absolute right-0 top-full z-50 mt-2 w-48 rounded-md border border-zinc-800 bg-zinc-950 p-3 text-xs shadow-2xl">
+                  <div className="grid grid-cols-2 gap-y-1.5 font-mono">
+                    <span className="text-zinc-400">SIGNAL:</span>
+                    <span className="text-right font-bold text-orange-500">
+                      EXCELLENT
+                    </span>
+                    <span className="text-zinc-400">RSSI:</span>
+                    <span className="text-right text-zinc-200">-65 dBm</span>
+                    <span className="text-zinc-400">PACKET LOSS:</span>
+                    <span className="text-right text-zinc-200">0.1%</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="relative">
