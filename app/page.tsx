@@ -119,13 +119,13 @@ export default function Home() {
           <span className="text-metric-md font-metric-md font-bold tracking-tighter text-zinc-100">
             SKYCOMMAND GCS
           </span>
-          <div className="flex items-center gap-2 rounded-full border border-green-500/40 bg-green-500/10 px-3 py-1">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-500" />
+          <div className="flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
             <span className="text-label-xs font-label-xs tracking-widest text-zinc-200">
               UAV-01 ALPHA
             </span>
-            <span className="h-3 w-px bg-green-500/30" />
-            <span className="text-label-xs font-label-xs uppercase tracking-widest text-green-500">
+            <span className="h-3 w-px bg-amber-500/30" />
+            <span className="text-label-xs font-label-xs uppercase tracking-widest text-amber-500">
               CONNECTED / ARMED
             </span>
           </div>
@@ -141,7 +141,7 @@ export default function Home() {
             <input
               type="text"
               placeholder="Search parameters..."
-              className="w-56 rounded border border-zinc-800 bg-zinc-900 py-1.5 pl-8 pr-3 text-sm text-zinc-200 placeholder-zinc-500 transition-colors focus:border-cyan-neon focus:outline-none"
+              className="w-56 rounded border border-zinc-800 bg-zinc-900 py-1.5 pl-8 pr-3 text-sm text-zinc-200 placeholder-zinc-500 transition-colors focus:border-orange-500 focus:outline-none"
             />
           </div>
 
@@ -166,7 +166,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setMenuOpen((o) => !o)}
-              className="flex items-center gap-1 rounded-none p-1 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-cyan-neon"
+              className="flex items-center gap-1 rounded-none p-1 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-orange-500"
             >
               <User size={18} />
               <ChevronDown size={14} />
@@ -193,7 +193,7 @@ export default function Home() {
                         className="flex cursor-not-allowed items-center gap-1.5 px-3 py-2 text-terminal-sm font-terminal-sm text-zinc-500"
                       >
                         {link.label}
-                        <span className="text-[10px] text-blue-400/70">
+                        <span className="text-[10px] text-amber-400/70">
                           (Coming soon...)
                         </span>
                       </a>
@@ -204,7 +204,7 @@ export default function Home() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => setMenuOpen(false)}
-                        className="block px-3 py-2 text-terminal-sm font-terminal-sm text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-cyan-neon"
+                        className="block px-3 py-2 text-terminal-sm font-terminal-sm text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-orange-500"
                       >
                         {link.label}
                       </a>
@@ -238,8 +238,8 @@ export default function Home() {
               title={satellite ? "Switch to vector map" : "Switch to satellite"}
               className={`flex items-center gap-1.5 rounded px-2 py-1 text-[10px] font-mono uppercase tracking-widest transition-colors ${
                 satellite
-                  ? "bg-cyan-neon/20 text-cyan-neon"
-                  : "text-zinc-400 hover:bg-zinc-800 hover:text-cyan-neon"
+                  ? "bg-orange-500/20 text-orange-500"
+                  : "text-zinc-400 hover:bg-zinc-800 hover:text-orange-500"
               }`}
             >
               <MapIcon size={16} />
@@ -250,7 +250,7 @@ export default function Home() {
               onClick={centerOnFirst}
               disabled={waypoints.length === 0}
               title="Center on Waypoint 1"
-              className="rounded p-1 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-cyan-neon disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded p-1 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-orange-500 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Crosshair size={16} />
             </button>
@@ -259,7 +259,7 @@ export default function Home() {
               onClick={fitToPath}
               disabled={waypoints.length === 0}
               title="Fit map to flight path"
-              className="rounded p-1 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-cyan-neon disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded p-1 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-orange-500 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Maximize size={16} />
             </button>

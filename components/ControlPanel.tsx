@@ -211,28 +211,28 @@ export default function ControlPanel({
         <section className="border-b border-zinc-800 bg-zinc-950 p-4">
           <div className="mb-4 flex items-center justify-center">
             <div className="px-6">
-              <h3 className="mb-1 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-300">
+              <h3 className="mb-1 text-xs font-mono font-bold uppercase tracking-widest text-slate-300">
                 Total Dist
               </h3>
               <div className="flex items-baseline gap-1">
                 <span
-                  className={`text-2xl font-mono font-black tabular-nums ${
-                    insufficientRange ? "text-red-500" : "text-cyan-400"
+                  className={`text-3xl font-mono font-black tabular-nums ${
+                    insufficientRange ? "text-red-500" : "text-orange-400"
                   }`}
                 >
                   {(totalMeters / 1000).toFixed(1)}
                 </span>
-                <span className="text-[10px] font-mono text-zinc-500">km</span>
+                <span className="text-xs font-mono text-zinc-500">km</span>
               </div>
             </div>
             <div className="border-l border-zinc-700 px-6">
-              <h3 className="mb-1 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-300">
+              <h3 className="mb-1 text-xs font-mono font-bold uppercase tracking-widest text-slate-300">
                 Ext Time
               </h3>
               <div className="flex items-baseline gap-1">
                 <span
-                  className={`text-2xl font-mono font-black tabular-nums ${
-                    insufficientRange ? "text-red-500" : "text-cyan-400"
+                  className={`text-3xl font-mono font-black tabular-nums ${
+                    insufficientRange ? "text-red-500" : "text-orange-400"
                   }`}
                 >
                   {formatClock(pathSeconds)}
@@ -242,7 +242,7 @@ export default function ControlPanel({
           </div>
           <div className="grid grid-cols-3 items-center gap-2">
             <div className="flex flex-col">
-              <label className="mb-1 flex items-center gap-1 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
+              <label className="mb-1 flex items-center gap-1 text-xs font-mono uppercase tracking-widest text-zinc-500">
                 Cruise Speed
                 <InfoTooltip text="Target velocity used to calculate estimated mission completion time." />
               </label>
@@ -253,25 +253,25 @@ export default function ControlPanel({
                   step={0.5}
                   value={cruiseSpeed}
                   onChange={(e) => setCruiseSpeed(Number(e.target.value))}
-                  className="w-14 rounded-none border border-zinc-700 bg-black px-1 py-0.5 text-center text-terminal-sm font-terminal-sm tabular-nums text-zinc-100 focus:border-cyan-neon focus:outline-none"
+                  className="w-16 rounded-none border border-zinc-700 bg-black px-2 py-1 text-center text-sm font-terminal-sm tabular-nums text-zinc-100 focus:border-orange-500 focus:outline-none"
                 />
-                <span className="flex items-center rounded-none border-y border-r border-zinc-700 bg-zinc-900 px-1 py-0.5 text-[10px] font-mono text-zinc-500">
+                <span className="flex items-center rounded-none border-y border-r border-zinc-700 bg-zinc-900 px-2 py-1 text-xs font-mono text-zinc-500">
                   m/s
                 </span>
               </div>
             </div>
             <div className="flex flex-col border-x border-zinc-800 text-center">
-              <label className="mb-1 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
+              <label className="mb-1 text-xs font-mono uppercase tracking-widest text-zinc-500">
                 WPTs
               </label>
-              <span className="text-terminal-sm font-terminal-sm font-mono tabular-nums text-zinc-100">
+              <span className="text-sm font-terminal-sm font-mono tabular-nums text-zinc-100">
                 {waypoints.length}
               </span>
             </div>
             <div className="flex justify-end">
               {isClosedLoop && (
-                <span className="flex items-center gap-1.5 rounded-none border border-green-500/50 bg-green-500/10 px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest text-green-500">
-                  <span className="h-1.5 w-1.5 animate-pulse bg-green-500" />
+                <span className="flex items-center gap-1.5 rounded-none border border-amber-500/50 bg-amber-500/10 px-2 py-0.5 text-xs font-mono uppercase tracking-widest text-amber-500">
+                  <span className="h-1.5 w-1.5 animate-pulse bg-amber-500" />
                   LOOP CLOSED
                 </span>
               )}
@@ -287,10 +287,10 @@ export default function ControlPanel({
                 warning
               </span>
               <div>
-                <h4 className="text-[10px] font-mono font-bold uppercase tracking-widest text-red-500">
+                <h4 className="text-xs font-mono font-bold uppercase tracking-widest text-red-500">
                   BATT WARN
                 </h4>
-                <p className="mt-0.5 text-[10px] font-mono uppercase text-red-400/80">
+                <p className="mt-0.5 text-xs font-mono uppercase text-red-400/80">
                   INSUFFICIENT RANGE FOR RETURN.
                 </p>
               </div>
@@ -301,7 +301,7 @@ export default function ControlPanel({
         {/* 3. Waypoints Manager */}
         <section className="border-b border-zinc-800 p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
+            <h3 className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-zinc-500">
               <span className="material-symbols-outlined text-[14px]">route</span>{" "}
               Waypoint Manager
               <InfoTooltip text="Sequential spatial coordinates defining the autonomous flight path." />
@@ -311,7 +311,7 @@ export default function ControlPanel({
                 type="button"
                 onClick={onUndo}
                 disabled={waypoints.length === 0 && !isClosedLoop}
-                className="rounded-none border border-zinc-700 px-2 py-0.5 text-[10px] font-mono uppercase text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-none border border-zinc-700 px-2 py-0.5 text-xs font-mono uppercase text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Undo
               </button>
@@ -319,7 +319,7 @@ export default function ControlPanel({
                 type="button"
                 onClick={onClear}
                 disabled={waypoints.length === 0}
-                className="rounded-none border border-zinc-700 px-2 py-0.5 text-[10px] font-mono uppercase text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-none border border-zinc-700 px-2 py-0.5 text-xs font-mono uppercase text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Clr
               </button>
@@ -329,27 +329,27 @@ export default function ControlPanel({
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="border-b border-zinc-800 bg-zinc-900">
-                  <th className="w-8 px-2 py-1 text-[10px] font-mono font-normal uppercase text-zinc-500">
+                  <th className="w-8 px-2 py-1 text-xs font-mono font-normal uppercase text-zinc-500">
                     #
                   </th>
-                  <th className="px-2 py-1 text-[10px] font-mono font-normal uppercase text-zinc-500">
+                  <th className="px-2 py-1 text-xs font-mono font-normal uppercase text-zinc-500">
                     LAT
                   </th>
-                  <th className="px-2 py-1 text-[10px] font-mono font-normal uppercase text-zinc-500">
+                  <th className="px-2 py-1 text-xs font-mono font-normal uppercase text-zinc-500">
                     LNG
                   </th>
-                  <th className="w-20 px-2 py-1 text-[10px] font-mono font-normal uppercase text-zinc-500">
+                  <th className="w-20 px-2 py-1 text-xs font-mono font-normal uppercase text-zinc-500">
                     ALT(m)
                   </th>
                   <th className="w-6 px-1 py-1" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800/50 text-terminal-sm font-terminal-sm tabular-nums text-zinc-300">
+              <tbody className="divide-y divide-zinc-800/50 text-sm font-terminal-sm tabular-nums text-zinc-300">
                 {waypoints.length === 0 ? (
                   <tr>
                     <td
                       colSpan={5}
-                      className="px-2 py-4 text-center text-[10px] font-mono uppercase text-zinc-600"
+                      className="px-2 py-4 text-center text-xs font-mono uppercase text-zinc-600"
                     >
                       No waypoints — click the map
                     </td>
@@ -362,13 +362,13 @@ export default function ControlPanel({
                         key={wp.id}
                         className={
                           isLast
-                            ? "group border-l-2 border-l-cyan-neon bg-cyan-neon/10 hover:bg-cyan-neon/20"
+                            ? "group border-l-2 border-l-orange-500 bg-orange-500/10 hover:bg-orange-500/20"
                             : "group hover:bg-zinc-900"
                         }
                       >
                         <td
                           className={`px-2 py-1 ${
-                            isLast ? "text-cyan-neon" : "text-zinc-600"
+                            isLast ? "text-orange-500" : "text-zinc-600"
                           }`}
                         >
                           {(i + 1).toString().padStart(2, "0")}
@@ -396,9 +396,9 @@ export default function ControlPanel({
                             onChange={(e) =>
                               onAltitudeChange(wp.id, Number(e.target.value))
                             }
-                            className={`w-full rounded-none border bg-black px-1 py-0 text-terminal-sm font-terminal-sm tabular-nums focus:border-cyan-neon focus:outline-none ${
+                            className={`w-full rounded-none border bg-black px-2 py-1 text-sm font-terminal-sm tabular-nums focus:border-orange-500 focus:outline-none ${
                               isLast
-                                ? "border-cyan-neon/50 text-cyan-neon"
+                                ? "border-orange-500/50 text-orange-500"
                                 : "border-zinc-800 text-zinc-300"
                             }`}
                           />
@@ -426,7 +426,7 @@ export default function ControlPanel({
 
         {/* 4. Vehicle Configuration (editable) */}
         <section className="border-b border-zinc-800 p-4">
-          <h3 className="mb-3 flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
+          <h3 className="mb-3 flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-zinc-500">
             <span className="material-symbols-outlined text-[14px]">build</span>{" "}
             Vehicle Configuration
             <InfoTooltip text="Physical drone parameters used to calculate momentum, thrust, and power consumption." />
@@ -438,7 +438,7 @@ export default function ControlPanel({
                   key={f.label}
                   className="flex items-center justify-between border-b border-zinc-900 pb-1"
                 >
-                  <label className="flex items-center gap-1 text-[10px] font-mono uppercase text-zinc-600">
+                  <label className="flex items-center gap-1 text-xs font-mono uppercase text-zinc-600">
                     {f.label}
                     <InfoTooltip
                       text={f.tip}
@@ -452,16 +452,16 @@ export default function ControlPanel({
                       step={f.step}
                       value={f.value}
                       onChange={(e) => f.set(Number(e.target.value))}
-                      className="w-16 rounded-none border border-zinc-800 bg-black px-1 py-0 text-right text-terminal-sm font-terminal-sm tabular-nums text-zinc-300 focus:border-cyan-neon focus:outline-none"
+                      className="w-20 rounded-none border border-zinc-800 bg-black px-2 py-1 text-right text-sm font-terminal-sm tabular-nums text-zinc-300 focus:border-orange-500 focus:outline-none"
                     />
-                    <span className="text-[10px] font-mono text-zinc-600">
+                    <span className="text-xs font-mono text-zinc-600">
                       {f.suffix}
                     </span>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-2 flex justify-between border-t border-zinc-800 pt-2 text-[10px] font-mono uppercase text-zinc-500">
+            <div className="mt-2 flex justify-between border-t border-zinc-800 pt-2 text-xs font-mono uppercase text-zinc-500">
               <span className="tabular-nums">E: {totalEnergyWh.toFixed(0)}Wh</span>
               <span className="tabular-nums">
                 P_HOV: {hoverPowerW.toFixed(0)}W
@@ -473,16 +473,16 @@ export default function ControlPanel({
         {/* 5. MAVLink Terminal — live JSON of the mission */}
         <section className="flex min-h-[250px] flex-1 flex-col bg-black p-0">
           <div className="flex items-center justify-between border-b border-zinc-800 bg-zinc-950 p-2">
-            <h3 className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-zinc-500">
+            <h3 className="flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-zinc-500">
               <span className="material-symbols-outlined text-[14px]">
                 terminal
               </span>{" "}
               MAVLink Telemetry Stream
               <InfoTooltip text="Live JSON output of the drone's subsystem states and routing commands." />
             </h3>
-            <div className="h-2 w-2 animate-pulse rounded-none bg-green-500" />
+            <div className="h-2 w-2 animate-pulse rounded-none bg-amber-500" />
           </div>
-          <pre className="hide-scrollbar flex-1 overflow-y-auto bg-black p-3 text-[11px] font-mono leading-tight tabular-nums text-green-500">
+          <pre className="hide-scrollbar flex-1 overflow-y-auto bg-black p-3 text-sm font-mono leading-tight tabular-nums text-orange-400">
             {JSON.stringify(mavlink, null, 2)}
             {"\n"}
             <span className="animate-pulse">_</span>
