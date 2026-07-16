@@ -94,6 +94,27 @@ export default function Home() {
     );
   }, []);
 
+  // Insert a brand-new waypoint at a specific index (from a ghost midpoint),
+  // keeping the chronological order of the flight path intact.
+  const insertWaypoint = useCallback(
+    (index: number, lat: number, lng: number) => {
+      setWaypoints((prev) => {
+        const next = [...prev];
+        next.splice(index, 0, {
+          id:
+            typeof crypto !== "undefined" && "randomUUID" in crypto
+              ? crypto.randomUUID()
+              : `wp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          lat,
+          lng,
+          altitude: DEFAULT_ALTITUDE,
+        });
+        return next;
+      });
+    },
+    [],
+  );
+
   const deleteWaypoint = useCallback((id: string) => {
     setWaypoints((prev) => {
       const next = prev.filter((wp) => wp.id !== id);
@@ -285,6 +306,7 @@ export default function Home() {
             fitNonce={fitNonce}
             onAddWaypoint={handleMapClick}
             onMoveWaypoint={moveWaypoint}
+            onInsertWaypoint={insertWaypoint}
           />
 
           {/* Floating map utility toolbar */}

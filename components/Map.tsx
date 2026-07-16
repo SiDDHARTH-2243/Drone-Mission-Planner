@@ -31,6 +31,7 @@ type MapProps = {
   fitNonce: number;
   onAddWaypoint: (lat: number, lng: number) => void;
   onMoveWaypoint: (id: string, lat: number, lng: number) => void;
+  onInsertWaypoint: (index: number, lat: number, lng: number) => void;
 };
 
 const TILE_LAYERS = {
@@ -128,6 +129,49 @@ function numberedIcon(index: number, size: number) {
   });
 }
 
+// Smaller, semi-transparent "ghost" marker sitting on each path segment;
+// clicking it inserts a real waypoint there.
+function ghostIcon(size: number) {
+  const g = Math.max(10, Math.round(size * 0.6));
+  return L.divIcon({
+    className: "waypoint-ghost",
+    html: `<div class="box-border rounded-full border-2 border-dashed border-orange-500 bg-orange-500/20 opacity-70" style="width:${g}px;height:${g}px;"></div>`,
+    iconSize: [g, g],
+    iconAnchor: [g / 2, g / 2],
+  });
+}
+
+type Midpoint = { lat: number; lng: number; insertIndex: number };
+
+// Geographic center of every consecutive waypoint pair (plus the closing
+// last->first leg when the loop is closed). insertIndex is where a new
+// waypoint must be spliced to keep the path order.
+function computeMidpoints(
+  waypoints: Waypoint[],
+  isClosedLoop: boolean,
+): Midpoint[] {
+  const mids: Midpoint[] = [];
+  for (let i = 0; i < waypoints.length - 1; i++) {
+    const a = waypoints[i];
+    const b = waypoints[i + 1];
+    mids.push({
+      lat: (a.lat + b.lat) / 2,
+      lng: (a.lng + b.lng) / 2,
+      insertIndex: i + 1,
+    });
+  }
+  if (isClosedLoop && waypoints.length >= 2) {
+    const last = waypoints[waypoints.length - 1];
+    const first = waypoints[0];
+    mids.push({
+      lat: (last.lat + first.lat) / 2,
+      lng: (last.lng + first.lng) / 2,
+      insertIndex: waypoints.length,
+    });
+  }
+  return mids;
+}
+
 export default function Map({
   waypoints,
   isClosedLoop,
@@ -136,6 +180,7 @@ export default function Map({
   fitNonce,
   onAddWaypoint,
   onMoveWaypoint,
+  onInsertWaypoint,
 }: MapProps) {
   const [currentZoom, setCurrentZoom] = useState(INITIAL_ZOOM);
   const markerSize = markerSizeForZoom(currentZoom);
@@ -145,6 +190,8 @@ export default function Map({
   if (isClosedLoop && waypoints.length > 0) {
     path.push([waypoints[0].lat, waypoints[0].lng]);
   }
+
+  const midpoints = computeMidpoints(waypoints, isClosedLoop);
 
   return (
     <>
@@ -185,6 +232,16 @@ export default function Map({
         fitNonce={fitNonce}
       />
       <MapEvents onAddWaypoint={onAddWaypoint} onZoomChange={setCurrentZoom} />
+      {midpoints.map((mid) => (
+        <Marker
+          key={`ghost-${mid.insertIndex}-${mid.lat.toFixed(5)}-${mid.lng.toFixed(5)}`}
+          position={[mid.lat, mid.lng]}
+          icon={ghostIcon(markerSize)}
+          eventHandlers={{
+            click: () => onInsertWaypoint(mid.insertIndex, mid.lat, mid.lng),
+          }}
+        />
+      ))}
       {waypoints.map((wp, i) => (
         <Marker
           key={wp.id}

@@ -74,7 +74,8 @@ body {
 
 /* Leaflet's default divIcon wrapper is opaque; the inner pin div carries the
    Tailwind styling (rounded-full, bg-blue-500, dynamic size). */
-.waypoint-marker {
+.waypoint-marker,
+.waypoint-ghost {
   background: transparent;
   border: none;
 }
