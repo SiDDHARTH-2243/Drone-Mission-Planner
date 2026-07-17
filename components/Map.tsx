@@ -16,6 +16,8 @@ import {
 import type { Waypoint } from "@/types/mission";
 
 const INITIAL_ZOOM = 13;
+const HOME_COORD: [number, number] = [17.68, 73.98];
+const DEFAULT_ZOOM = 13;
 
 // Marker shrinks as the map zooms in, allowing more precise clicking.
 const MARKER_MAX_PX = 40; // zoomed out
@@ -35,6 +37,7 @@ type MapProps = {
   // Incrementing counters trigger the matching map action from the toolbar.
   focusNonce: number;
   fitNonce: number;
+  homeNonce: number;
   onAddWaypoint: (lat: number, lng: number) => void;
   onCloseLoop: () => void;
   onGenerateShape: (lat: number, lng: number) => void;
@@ -66,10 +69,12 @@ function MapCommands({
   waypoints,
   focusNonce,
   fitNonce,
+  homeNonce,
 }: {
   waypoints: Waypoint[];
   focusNonce: number;
   fitNonce: number;
+  homeNonce: number;
 }) {
   const map = useMap();
   const wpRef = useRef(waypoints);
@@ -105,6 +110,13 @@ function MapCommands({
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fitNonce]);
+
+  // Return to Home — smooth fly animation back to default operational area.
+  useEffect(() => {
+    if (homeNonce === 0) return;
+    map.flyTo(HOME_COORD, DEFAULT_ZOOM, { duration: 1.5 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [homeNonce]);
 
   return null;
 }
@@ -238,6 +250,7 @@ export default function Map({
   drawMode,
   focusNonce,
   fitNonce,
+  homeNonce,
   onAddWaypoint,
   onCloseLoop,
   onGenerateShape,
@@ -312,6 +325,7 @@ export default function Map({
         waypoints={waypoints}
         focusNonce={focusNonce}
         fitNonce={fitNonce}
+        homeNonce={homeNonce}
       />
       <MapEvents
         waypoints={waypoints}

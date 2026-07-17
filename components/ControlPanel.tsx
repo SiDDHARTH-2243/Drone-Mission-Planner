@@ -1,8 +1,8 @@
 "use client";
 
 import * as turf from "@turf/turf";
-import { Info } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Check, Copy, Info } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 import {
   AIR_DENSITY_KG_M3,
   DEFAULT_CRUISE_SPEED_MPS,
@@ -146,6 +146,17 @@ export default function ControlPanel({
 
   const mavlink = useMemo(() => toMavlink(waypoints), [waypoints]);
 
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopyTelemetry = useCallback(() => {
+    navigator.clipboard
+      .writeText(JSON.stringify(mavlink, null, 2))
+      .then(() => {
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+      });
+  }, [mavlink]);
+
   const configFields: {
     label: string;
     value: number;
@@ -205,7 +216,7 @@ export default function ControlPanel({
   ];
 
   return (
-    <aside className="z-20 flex h-full w-[450px] shrink-0 flex-col border-l border-zinc-800 bg-black">
+    <aside className="z-20 flex w-full md:w-96 lg:w-[400px] h-auto md:h-full shrink-0 flex-col border-t md:border-t-0 md:border-l border-zinc-800 bg-black overflow-y-auto">
       <div className="hide-scrollbar flex flex-1 flex-col overflow-y-auto scroll-smooth">
         {/* 1. Telemetry Header */}
         <section className="border-b border-zinc-800 bg-zinc-950 p-4">
@@ -480,7 +491,21 @@ export default function ControlPanel({
               MAVLink Telemetry Stream
               <InfoTooltip text="Live JSON output of the drone's subsystem states and routing commands." />
             </h3>
-            <div className="h-2 w-2 animate-pulse rounded-none bg-amber-500" />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleCopyTelemetry}
+                title="Copy telemetry to clipboard"
+                className="rounded p-1 transition-colors hover:bg-zinc-800"
+              >
+                {isCopied ? (
+                  <Check className="w-4 h-4 text-green-500" />
+                ) : (
+                  <Copy className="w-4 h-4 text-zinc-500 hover:text-white transition-colors" />
+                )}
+              </button>
+              <div className="h-2 w-2 animate-pulse rounded-none bg-amber-500" />
+            </div>
           </div>
           <pre className="hide-scrollbar flex-1 overflow-y-auto bg-black p-3 text-sm font-mono leading-tight tabular-nums text-orange-400">
             {JSON.stringify(mavlink, null, 2)}
