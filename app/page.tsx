@@ -185,7 +185,7 @@ export default function Home() {
         {/* Left: brand + live status pill */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            {/* Logo mark — quadcopter */}
+            {/* Logo mark — top-down quadcopter */}
             <svg
               width="26"
               height="26"
@@ -194,27 +194,22 @@ export default function Home() {
               aria-label="SKYCOMMAND logo"
               className="shrink-0"
             >
-              <rect
-                x="1"
-                y="1"
-                width="30"
-                height="30"
-                rx="7"
-                fill="#f97316"
-              />
               <g
-                stroke="#0a0a0a"
+                stroke="#f97316"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <path d="M10 10 L22 22 M22 10 L10 22" />
-                <circle cx="16" cy="16" r="2.4" fill="#0a0a0a" stroke="none" />
-                <circle cx="9" cy="9" r="3.1" fill="#f97316" />
-                <circle cx="23" cy="9" r="3.1" fill="#f97316" />
-                <circle cx="9" cy="23" r="3.1" fill="#f97316" />
-                <circle cx="23" cy="23" r="3.1" fill="#f97316" />
+                {/* X-frame arms */}
+                <path d="M9 9 L23 23 M23 9 L9 23" />
+                {/* rotor rings */}
+                <circle cx="9" cy="9" r="4" />
+                <circle cx="23" cy="9" r="4" />
+                <circle cx="9" cy="23" r="4" />
+                <circle cx="23" cy="23" r="4" />
               </g>
+              {/* central body */}
+              <rect x="13" y="13" width="6" height="6" rx="1.5" fill="#f97316" />
             </svg>
             <span className="text-metric-md font-metric-md font-bold tracking-tighter text-zinc-100">
               SKYCOMMAND GCS
