@@ -184,9 +184,42 @@ export default function Home() {
       <header className="z-50 flex w-full items-center justify-between border-b border-zinc-800 bg-black px-4 py-2">
         {/* Left: brand + live status pill */}
         <div className="flex items-center gap-4">
-          <span className="text-metric-md font-metric-md font-bold tracking-tighter text-zinc-100">
-            SKYCOMMAND GCS
-          </span>
+          <div className="flex items-center gap-2">
+            {/* Logo mark — quadcopter */}
+            <svg
+              width="26"
+              height="26"
+              viewBox="0 0 32 32"
+              fill="none"
+              aria-label="SKYCOMMAND logo"
+              className="shrink-0"
+            >
+              <rect
+                x="1"
+                y="1"
+                width="30"
+                height="30"
+                rx="7"
+                fill="#f97316"
+              />
+              <g
+                stroke="#0a0a0a"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M10 10 L22 22 M22 10 L10 22" />
+                <circle cx="16" cy="16" r="2.4" fill="#0a0a0a" stroke="none" />
+                <circle cx="9" cy="9" r="3.1" fill="#f97316" />
+                <circle cx="23" cy="9" r="3.1" fill="#f97316" />
+                <circle cx="9" cy="23" r="3.1" fill="#f97316" />
+                <circle cx="23" cy="23" r="3.1" fill="#f97316" />
+              </g>
+            </svg>
+            <span className="text-metric-md font-metric-md font-bold tracking-tighter text-zinc-100">
+              SKYCOMMAND GCS
+            </span>
+          </div>
           <div className="flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
             <span className="text-label-xs font-label-xs tracking-widest text-zinc-200">
